@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Wodsoft.Forum\Wodsoft.Forum.csproj" />
+    <ProjectReference Include="..\Wodsoft.Forum.Sample.Entity\Wodsoft.Forum.Sample.Entity.csproj" />
   </ItemGroup>
 
 </Project>

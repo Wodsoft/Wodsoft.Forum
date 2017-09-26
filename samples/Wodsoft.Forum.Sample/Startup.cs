@@ -6,22 +6,65 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Wodsoft.ComBoost.Security;
+using Microsoft.EntityFrameworkCore;
+using Wodsoft.ComBoost.Data.Entity;
+using Microsoft.AspNetCore.Http;
+using Wodsoft.ComBoost;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Wodsoft.ComBoost.AspNetCore;
+using Wodsoft.ComBoost.Data;
+using Wodsoft.Forum.Sample.Domain;
 
 namespace Wodsoft.Forum.Sample
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            _Env = env;
             Configuration = configuration;
         }
 
+        private IHostingEnvironment _Env;
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMemoryCache();
+            services.AddSession();
+            services.AddMvc(options =>
+            {
+                options.AddComBoostMvcDataOptions();
+            });
+            services.AddComBoostMvcAuthentication<ComBoostAuthenticationSessionHandler>();
+
+            services.AddScoped<DbContext, DataContext>(serviceProvider =>
+                new DataContext(new DbContextOptionsBuilder<DataContext>().UseInMemoryDatabase("Test")
+                .Options));
+            services.AddScoped<IDatabaseContext, DatabaseContext>();
+            services.AddScoped<ISecurityProvider, ForumSecurityProvider>();
+            services.AddScoped<IAuthenticationProvider, ComBoostAuthenticationProvider>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IDomainServiceAccessor, DomainServiceAccessor>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
+            services.AddSingleton<ISerializerProvider, JsonSerializerProvider>();
+            services.AddScoped<IStorageProvider, PhysicalStorageProvider>(t =>
+            {
+                return new PhysicalStorageProvider(PhysicalStorageOptions.CreateDefault(_Env.ContentRootPath + System.IO.Path.DirectorySeparatorChar + "Uploads"));
+            });
+            services.AddSingleton<IDomainServiceProvider, DomainProvider>(t =>
+            {
+                var provider = new DomainProvider(t);
+                provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(EntitySearchExtension<>));
+                provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(EntityPagerExtension<>));
+                provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(EntityPasswordExtension<>));
+                provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(ImageExtension<>));
+                provider.AddForumExtensions();
+                return provider;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -5,10 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Wodsoft.Forum.Sample.Models;
+using Wodsoft.ComBoost.Mvc;
 
 namespace Wodsoft.Forum.Sample.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : DomainController
     {
         public IActionResult Index()
         {

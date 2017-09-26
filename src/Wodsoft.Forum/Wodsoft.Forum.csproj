@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Wodsoft.ComBoost" Version="3.0.0-beta-6" />
+    <PackageReference Include="Wodsoft.ComBoost.Data" Version="3.0.0-beta-6" />
   </ItemGroup>
 
   <ItemGroup>
