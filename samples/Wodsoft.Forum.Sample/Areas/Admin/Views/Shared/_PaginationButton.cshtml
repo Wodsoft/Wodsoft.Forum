@@ -1,0 +1,17 @@
+﻿@model IPagination
+@{
+    Random rnd = new Random();
+    var r = rnd.Next(0, 10000).ToString();
+}
+<div class="btn-group" role="group">
+    @foreach (var size in Model.PageSizeOption)
+    {
+        <button type="submit" name="size" value="@size" onclick="changeSize_@(r)();" class="btn @(size == Model.CurrentSize ? "btn-secondary" : "btn-primary" )">@size</button>
+    }
+</div>
+<input type="hidden" name="size" id="size" value="@Model.CurrentSize" />
+<script type="text/javascript">
+    function changeSize_@(r)() {
+        $('#size').prop('disabled', true);
+    }
+</script>

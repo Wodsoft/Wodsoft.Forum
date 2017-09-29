@@ -1,0 +1,213 @@
+﻿@model IEntityViewModel
+@{
+    ViewBag.Title = Model.Metadata.Name + "列表";
+}
+<ul class="breadcrumb">
+    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">首页</a></li>
+    <li class="breadcrumb-item active">@Model.Metadata.Name</li>
+</ul>
+<form id="listForm" method="get" onsubmit="checkSearch();">
+    <ul class="nav nav-tabs">
+        <li class="nav-item"><a class="nav-link active"><span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> 列表</a></li>
+        @if (Model.Metadata.SearchProperties.Count() > 0)
+        {
+            <li class="nav-item"><a role="button" data-toggle="collapse" href="#searchPanel" class="nav-link"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> 查询</a></li>
+        }
+        @if (Model.Metadata.AddRoles.All(t => User.IsInRole(t)))
+        {
+            <li class="nav-item"><a href="@Html.Raw(Url.Action("Create"))" class="nav-link"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建</a></li>
+        }
+        @foreach (var button in Model.ViewButtons)
+        {
+            @if (button.Target != null)
+            {
+                <li class="nav-item"><a href="@Html.Raw(button.Target)" class="nav-link" title="@button.Tooltip">@button.Icon@button.Name</a></li>
+            }
+        }
+        @if (Model.Metadata.DetailProperties.All(t => User.IsInRole(t)))
+        {
+            <li class="nav-item"><a id="detailButton" href="javascript:gotoDetail();" class="nav-link disabled"><span class="glyphicon glyphicon-record"></span> 详情</a></li>
+        }
+        @if (Model.Metadata.EditRoles.All(t => User.IsInRole(t)))
+        {
+            <li class="nav-item"><a id="editButton" href="javascript:gotoEdit();" class="nav-link disabled"><span class="glyphicon glyphicon-edit"></span> 编辑</a></li>
+        }
+        @if (Model.Metadata.RemoveRoles.All(t => User.IsInRole(t)))
+        {
+            <li class="nav-item"><a id="removeButton" href="javascript:gotoRemove();" class="nav-link disabled"><span class="glyphicon glyphicon-remove"></span> 删除</a></li>
+        }
+        @foreach (var button in Model.ItemButtons)
+        {
+            <li class="nav-item"><a id="customButton@(Array.IndexOf(Model.ItemButtons, button))" href="javascript:gotoCustom(@Array.IndexOf(Model.ItemButtons, button));" class="nav-link disabled" title="@button.Tooltip">@Html.Raw(button.Icon)@button.Name</a></li>
+        }
+    </ul>
+    <div class="tab-content">
+        <div class="@(Context.Request.Query["Search"] == "True" ? "collapse in" : "collapse")" id="searchPanel">
+            <div class="row" style="padding-top: 10px; padding-bottom: 10px;">
+                <div class="col">
+                    @{ int searchCount = 0;}
+                    @foreach (var property in Model.Metadata.SearchProperties)
+                    {
+                        @Html.Raw(searchCount % 2 == 0 ? "<div class=\"form-row\">\r\n" : "")
+                        <div class="form-group col-sm-6">
+                            <label class="col-form-label" style="padding-right:0;">@property.Name</label>
+                            @Html.Partial("Search", property)
+                        </div>
+                        @Html.Raw(searchCount % 2 == 1 ? "</div>" : "")
+                        searchCount++;
+                    }
+                    @Html.Raw(searchCount % 2 == 1 ? "</div>" : "")
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group-vertical">
+                        <button class="btn btn-secondary" onclick="doSearch();" name="Search" value="True">确定</button>
+                        <button class="btn btn-secondary" onclick="cancelSearch();">取消</button>
+                    </div>
+                    <input type="hidden" id="searchTag" name="Search" value="True" @Html.Raw(Context.Request.Query["Search"] == "True" ? "" : "disabled=\"disabled\"") />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th style="width: 32px;"></th>
+                @foreach (var header in Model.Properties)
+                {
+                    <th title="@header.Description">@header.Name</th>
+                }
+            </tr>
+        </thead>
+        <tbody id="listview">
+            @foreach (IEntity item in Model.Items)
+            {
+                <tr data-id="@item.Index" data-remove="@item.IsRemoveAllowed" data-edit="@item.IsEditAllowed" @Html.Raw(string.Join(" ", Model.ItemButtons.Where(t => { t.SetTarget(Context.RequestServices, item); return t.Target != null; }).Select(t => " data-b-" + Array.IndexOf(Model.ItemButtons, t) + "=\" " + t.Target.ToString() + "\" ")))>
+                    <td class="text-center">
+                        <input type="radio" />
+                    </td>
+                    @foreach (var header in Model.Properties)
+                    {
+                        <td>
+                            @Html.Viewer(item, header, header.GetValue(item))
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="@(1 + Model.Properties.Count())">
+                    <div class="row">
+                        <div class="col">
+                            @Html.Partial("_PaginationButton", Model)
+                        </div>
+                        <div class="col-auto">
+                            @Html.Partial("_Pagination", Model)
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</form>
+<div class="modal fade" tabindex="-1" role="dialog" id="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">操作失败</h4>
+            </div>
+            <div class="modal-body">
+                <p id="dialogContent"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script type="text/javascript">
+    var id, selectedItem;
+    var customButtonCount = new Number('@Model.ItemButtons.Length');
+    var customButton = new Array(customButtonCount);
+    for (var i = 0; i < customButtonCount; i++) {
+        customButton[i] = null;
+    }
+
+
+    $('#listview').children('tr').click(function () {
+        $('#listview').children('tr').each(function (index, element) {
+            $(element).children().first().children().first('input').prop('checked', false);
+        });
+        var item = $(this);
+        selectedItem = item;
+        item.children().first().children().first().prop('checked', true);
+
+        id = item.data('id');
+        $('#detailButton').removeClass('disabled');
+        var removeButton = $('#removeButton');
+        if (removeButton.length > 0 && item.data('remove') == 'True')
+            removeButton.removeClass('disabled');
+        var editButton = $('#editButton');
+        if (editButton.length > 0 && item.data('edit') == 'True')
+            editButton.removeClass('disabled');
+        for (var i = 0; i < customButtonCount; i++) {
+            var link = item.attr('data-b-' + i);
+            customButton[i] = link;
+            if (link == null)
+                $('#customButton' + i).addClass('disabled');
+            else
+                $('#customButton' + i).removeClass('disabled');
+        }
+    });
+
+    function gotoDetail() {
+        if (id != null)
+            window.location.href = '@Url.Action("Detail")/' + id;
+    }
+
+    function gotoEdit() {
+        if (id != null)
+            window.location.href = '@Url.Action("Edit")/' + id;
+    }
+
+    function cancelSearch() {
+        $('#searchPanel').find('input').prop('disabled', true);
+        $('#listForm').submit();
+    }
+
+    function doSearch() {
+        $('#searchTag').prop('disabled', false);
+        $('#listForm').submit();
+    }
+
+    function gotoRemove() {
+        if (id != null)
+            $.ajax({
+                url: '@Html.Raw(Url.Action("Remove"))/' + id,
+                cache: false,
+                type: 'POST',
+                success: function () {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    $('#dialogContent').html(xhr.responseText);
+                    $('#dialog').modal('show');
+                }
+            })
+    }
+
+    function checkSearch() {
+        if ($('#searchTag').prop('disabled') == true)
+            $('#searchPanel').find('input').prop('disabled', true);
+    }
+
+    function gotoCustom(index) {
+        if (customButton[index] != null)
+            window.location.href = customButton[index];
+    }
+    </script>
+}

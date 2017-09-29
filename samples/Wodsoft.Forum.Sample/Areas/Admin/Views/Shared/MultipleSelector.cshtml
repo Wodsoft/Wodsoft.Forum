@@ -1,0 +1,120 @@
+﻿@model IEntityViewModel
+@{
+    ViewBag.Title = Model.Metadata.Name + " 多项选择器";
+}
+<form method="get" class="form-horizontal">
+    <ul class="nav nav-tabs">
+        <li class="nav-item"><a class="nav-link active"><span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> 列表</a></li>
+        @if (Model.Metadata.SearchProperties.Count() > 0)
+        {
+            <li class="nav-item"><a role="button" data-toggle="collapse" href="#searchPanel" class="nav-link"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> 查询</a></li>
+        }
+        <li class="nav-item"><a href="javascript:ok();" id="okButton" class="nav-link disabled"><span class="glyphicon glyphicon-ok-circle"></span> 选择</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="@(Context.Request.Query["Search"] == "True" ? "collapse in" : "collapse")" id="searchPanel">
+            <table class="table">
+                <tr>
+                    <td>
+                        @{ int searchCount = 0;}
+                        @foreach (var property in Model.Metadata.SearchProperties)
+                        {
+                            @Html.Raw(searchCount % 2 == 0 ? "<div class=\"form-group\">" : "")
+                            <label class="col-sm-2 control-label">@property.Name</label>
+                            <div class="col-sm-4">
+                                @Html.Partial("Search", property)
+                            </div>
+                            @Html.Raw(searchCount % 2 == 1 ? "</div>" : "")
+                            searchCount++;
+                        }
+                        @Html.Raw(searchCount % 2 == 0 ? "</div>" : "")
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="doSearch();" name="Search" value="True">确定</button>
+                        <button class="btn btn-secondary" onclick="cancelSearch();">取消</button>
+                        @if (Context.Request.Query["Search"] == "True")
+                        {
+                            <input type="hidden" id="searchTag" name="Search" value="True" />
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="tab-pane active">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 32px;"></th>
+                        @foreach (var header in Model.Properties)
+                        {
+                            <th title="@header.Description">@header.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody id="listview">
+                    @foreach (IEntity item in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox" data-id="@item.Index" data-name="@item" />
+                            </td>
+                            @foreach (var header in Model.Properties)
+                            {
+                                <td>
+                                    @Html.Viewer(item, header, header.GetValue(item))
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="@(1 + Model.Properties.Count())">
+                            <div class="row">
+                                <div class="col">
+                                    @Html.Partial("_PaginationButton", Model)
+                                </div>
+                                <div class="col-auto">
+                                    @Html.Partial("_Pagination", Model)
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $('#listview').children('tr').click(function () {
+        var item = $(this);
+        selectedItem = item;
+        item.children().first().children().first().click();
+        
+        var okButton = $('#okButton');
+        if ($('#listview tr td:first input:checked').length > 0)
+            okButton.removeClass('disabled');
+        else
+            okButton.addClass('disabled');
+    });
+
+    function ok() {
+        if ($('#listview tr td:first input:checked').length > 0)
+            return;
+
+        var result = new Array();
+        $('#listview tr td:first input:checked').each(function (index, element) {
+            element = $(element);
+            var id = element.attr('data-id');
+            var name = element.attr('data-name');
+            result.push('<option value=' + id + '>' + name + '</option>');
+        });
+        window.returnValue = result;
+        if (window.opener) {
+            window.opener.returnValue = window.returnValue;
+            if (window.opener.selectCompleted != undefined)
+                window.opener.selectCompleted(window.returnValue);
+        }
+        window.close();
+    }
+</script>
