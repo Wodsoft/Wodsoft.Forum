@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wodsoft.Forum", "src\Wodsoft.Forum\Wodsoft.Forum.csproj", "{B3355A43-9F82-4C5D-8286-CC95A486E1B7}"
 EndProject
@@ -13,9 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wodsoft.Forum.Core", "src\W
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wodsoft.Forum.Sample", "samples\Wodsoft.Forum.Sample\Wodsoft.Forum.Sample.csproj", "{F0D55779-85E9-420B-883D-9056A9E876D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wodsoft.Forum.Sample.Entity", "samples\Wodsoft.Forum.Sample.Entity\Wodsoft.Forum.Sample.Entity.csproj", "{917FF11B-BE06-4B6F-92FB-E2ED274D0D1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wodsoft.Forum.Sample.Entity", "samples\Wodsoft.Forum.Sample.Entity\Wodsoft.Forum.Sample.Entity.csproj", "{917FF11B-BE06-4B6F-92FB-E2ED274D0D1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wodsoft.Forum.Sample.Domain", "samples\Wodsoft.Forum.Sample.Domain\Wodsoft.Forum.Sample.Domain.csproj", "{BEBF0371-2350-44C1-8885-84DEE9F4E9DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wodsoft.Forum.Sample.Domain", "samples\Wodsoft.Forum.Sample.Domain\Wodsoft.Forum.Sample.Domain.csproj", "{BEBF0371-2350-44C1-8885-84DEE9F4E9DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wodsoft.Forum.MvcCore", "src\Wodsoft.Forum.MvcCore\Wodsoft.Forum.MvcCore.csproj", "{E009A88D-F00E-47D4-9BEE-6DF790B41CBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{BEBF0371-2350-44C1-8885-84DEE9F4E9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEBF0371-2350-44C1-8885-84DEE9F4E9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEBF0371-2350-44C1-8885-84DEE9F4E9DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E009A88D-F00E-47D4-9BEE-6DF790B41CBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E009A88D-F00E-47D4-9BEE-6DF790B41CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E009A88D-F00E-47D4-9BEE-6DF790B41CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E009A88D-F00E-47D4-9BEE-6DF790B41CBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{F0D55779-85E9-420B-883D-9056A9E876D2} = {D540AA57-0F64-45BC-B623-3C8ECDF98B8A}
 		{917FF11B-BE06-4B6F-92FB-E2ED274D0D1A} = {D540AA57-0F64-45BC-B623-3C8ECDF98B8A}
 		{BEBF0371-2350-44C1-8885-84DEE9F4E9DA} = {D540AA57-0F64-45BC-B623-3C8ECDF98B8A}
+		{E009A88D-F00E-47D4-9BEE-6DF790B41CBC} = {CF9D9E51-7FEF-44BD-A18B-E4202EDC3867}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0AA48CC7-EABA-426A-BEA9-CD8DE76EF9B1}
