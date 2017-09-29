@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Wodsoft.ComBoost.AspNetCore;
 using Wodsoft.ComBoost.Data;
 using Wodsoft.Forum.Sample.Domain;
+using Wodsoft.ComBoost.Data.Entity.Metadata;
+using Wodsoft.Forum.Sample.Entity;
 
 namespace Wodsoft.Forum.Sample
 {
@@ -63,8 +65,11 @@ namespace Wodsoft.Forum.Sample
                 provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(EntityPasswordExtension<>));
                 provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(ImageExtension<>));
                 provider.AddForumExtensions();
+                provider.AddGlobalFilter<AliasFilter>();
                 return provider;
             });
+
+            EntityDescriptor.InitMetadata(typeof(Board).Assembly);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -82,11 +87,25 @@ namespace Wodsoft.Forum.Sample
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
+            app.UseSession();
+
+            app.UseComBoost();
+
+            app.UseComBoostMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapAreaRoute("areaRoute", "Admin", "Admin/{controller=Home}/{action=Index}/{id?}", null, null, new
+                {
+                    authArea = "Admin",
+                    loginPath = "/Admin/Account/SignIn",
+                    logoutPath = "/Admin/Account/SignOut"
+                });
+
+                routes.MapRoute("default", "{controller=Board}/{action=Index}/{id?}", null, null, new
+                {
+                    loginPath = "/Account/SignIn",
+                    logoutPath = "/Account/SignOut",
+                    expireTime = TimeSpan.FromDays(30)
+                });
             });
         }
     }

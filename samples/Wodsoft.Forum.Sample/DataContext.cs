@@ -15,7 +15,8 @@ namespace Wodsoft.Forum.Sample
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-
+            if (!optionsBuilder.IsConfigured)
+                optionsBuilder.UseInMemoryDatabase("Test");
         }
 
         public DbSet<Board> Board { get; set; }

@@ -1,0 +1,37 @@
+﻿@model Forum[]
+@{
+    ViewData["Title"] = "Wodsoft";
+    int count = 0;
+}
+@foreach (var board in Model.GroupBy(t => t.Board))
+{
+    <h1>
+        @board.Key.Name
+        <small class="text-muted">@board.Key.Description</small>
+    </h1>
+    <hr />
+    <div class="row">
+        @foreach (var item in board)
+        {
+            <div class="col">
+                <ul class="list-unstyled">
+                    <li class="media">
+                        <a class="d-flex align-self-center mr-3" href="@Html.Raw(Url.Action("Forum", new { id = item.Index }))">
+                            <img src="~/images/board.gif" />
+                        </a>
+                        <div class="media-body">
+                            <h5 class="mt-0"><a href="@Html.Raw(Url.Action("Forum", new { id = item.Index }))">@item.Name</a></h5>
+                            @item.Description
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-sm-block d-md-none w-100"></div>
+            if (count % 2 == 1)
+            {
+                @Html.Raw("<div class=\"d-md-block w-100\"></div>")
+            }
+            count++;
+        }
+    </div>
+}

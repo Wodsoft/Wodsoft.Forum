@@ -1,0 +1,41 @@
+﻿@model IPagination
+@{
+    Random rnd = new Random();
+    var r = rnd.Next(0, 10000).ToString();
+}
+<div class="btn-group">
+    @if (Model.CurrentPage > 3)
+    {
+        <button type="submit" name="page" value="1" onclick="changePage_@(r)();" class="btn @(Model.CurrentPage == 1 ? "btn-secondary" : "btn-primary" )" @(Model.CurrentPage == 1 ? " disabled=\"disabled\"" : "" )>1</button>
+        if (Model.CurrentPage > 4)
+        {
+            <button type="button" class="btn btn-secondary disabled">.</button>
+        }
+    }
+    @for (int i = Model.CurrentPage - 2; i <= Model.CurrentPage + 2; i++)
+    {
+        if (i < 1)
+        {
+            continue;
+        }
+        if (i > Model.TotalPage)
+        {
+            break;
+        }
+        <button type="submit" name="page" value="@i" onclick="changePage_@(r)();" class="btn @(Model.CurrentPage == i ? "btn-secondary" : "btn-primary" )">@i</button>
+    }
+    @if (Model.CurrentPage < Model.TotalPage - 2)
+    {
+        if (Model.CurrentPage < Model.TotalPage - 3)
+        {
+            <button type="button" class="btn btn-secondary disabled">.</button>
+        }
+        <button type="submit" name="page" value="@Model.TotalPage" onclick="changePage_@(r)();" class="btn @(Model.CurrentPage == Model.TotalPage ? "btn-secondary" : "btn-primary" )" @(Model.CurrentPage == Model.TotalPage ? " disabled=\"disabled\"" : "" )>@Model.TotalPage</button>
+    }
+</div>
+<input type="hidden" name="page" id="page" value="@Model.CurrentPage" />
+<script type="text/javascript">
+    function changePage_@(r)() {
+        $('#page').prop('disabled', true);
+    }
+</script>

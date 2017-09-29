@@ -1,0 +1,79 @@
+﻿@model Forum
+<link href="~/lib/editor.md/css/editormd.css" rel="stylesheet" />
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a asp-action="Forum">论坛</a></li>
+    <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Forum", new { id = Model.Index }))">@Model.Name</a></li>
+    <li class="breadcrumb-item active">发表帖子</li>
+</ol>
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a class="nav-link active" href="#">发表帖子</a></li>
+</ul>
+<br />
+<form id="form" method="post" action="@Url.Action("ThreadCreate")" onsubmit="return false;">
+    <input type="hidden" name="ForumId" value="@Model.Index" />
+    <div class="form-group">
+        <input type="text" class="form-control" id="title" name="title" maxlength="20" placeholder="请输入标题" />
+    </div>
+    <div class="form-group">
+        <div id="content">
+            <textarea class="form-control" name="content" style="display:none;"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <button id="ok" type="button" class="btn btn-success">发表</button>
+    </div>
+</form>
+<div class="modal fade" id="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dialogTitle">提交结果</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="dialogContent">
+
+            </div>
+            <div class="modal-footer">
+                <button id="dialogOK" type="button" class="btn btn-primary">确定</button>
+                <button id="dialogCancel" type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/lib/editor.md/src/editormd.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var editor = editormd("content", {
+                height: 480,
+                path: '@Url.Content("~/lib/editor.md/lib/")',
+                placeholder: '请输入帖子内容'
+            });
+        });
+
+
+        $('#ok').click(function () {
+            $.ajax({
+                url :'@Url.Action("ThreadCreate")',
+                data: new FormData(document.getElementById('form')),
+                contentType: false,
+                processData: false,
+                type: 'POST',
+                dataType: 'json',
+                success: function (result) {
+                    $('#dialogOK').click(function () {
+                        window.location = '/Thread/' + result.threadId;
+                    });
+                    $('#dialogContent').html('发表成功。');
+                    $('#dialog').modal();
+                },
+                error: function (result) {
+                    $('#dialogContent').html(result.responseText);
+                    $('#dialog').modal();
+                }
+            });
+        });
+    </script>
+}
