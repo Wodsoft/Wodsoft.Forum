@@ -10,8 +10,7 @@ namespace Wodsoft.ComBoost
     {
         public static void AddForumExtensions(this IDomainServiceProvider provider)
         {
-            provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(ThreadDomainExtension<>));
-            provider.AddGenericDefinitionExtension(typeof(EntityDomainService<>), typeof(PostDomainExtension<>));
+            provider.AddExtension<ForumDomainService, PagerExtension>();
         }
     }
 }
