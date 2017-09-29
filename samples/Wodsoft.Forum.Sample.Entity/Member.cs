@@ -12,6 +12,10 @@ namespace Wodsoft.Forum.Sample.Entity
 {
     [DisplayColumn("Username", "CreateDate", true)]
     [DisplayName("用户")]
+    [EntityAuthentication(AllowAnonymous = false,
+        AddRolesRequired = new object[] { AdminType.Admin },
+        EditRolesRequired = new object[] { AdminType.Admin },
+        RemoveRolesRequired = new object[] { AdminType.Admin })]
     public class Member : UserBase, IMember, IPermission
     {
         [Searchable]
@@ -30,8 +34,8 @@ namespace Wodsoft.Forum.Sample.Entity
         [Required]
         public override byte[] Password { get { return base.Password; } set { base.Password = value; } }
 
-        //[Display(Name = "管理员", Order = 30)]
-        //public bool IsAdmin { get; set; }
+        [Display(Name = "类型", Order = 30)]
+        public AdminType Type { get; set; }
 
         [Hide]
         public ICollection<Thread> Threads { get; set; }

@@ -11,10 +11,15 @@ namespace Wodsoft.Forum.Sample.Entity
 {
     [DisplayName("板块")]
     [DisplayColumn("Name", "Order", false)]
+    [EntityAuthentication(AllowAnonymous = false,
+        AddRolesRequired = new object[] { AdminType.Admin },
+        EditRolesRequired = new object[] { AdminType.Admin },
+        RemoveRolesRequired = new object[] { AdminType.Admin })]
     public class Board : EntityBase, IBoard
     {
         [Display(Name = "板块名称", Order = 0)]
         [Required]
+        [Searchable]
         public virtual string Name { get; set; }
 
         [Display(Name = "板块说明", Order = 10)]

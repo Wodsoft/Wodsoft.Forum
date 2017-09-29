@@ -13,14 +13,20 @@ namespace Wodsoft.Forum.Sample.Entity
     [DisplayColumn("Name", "CreateDate", true)]
     public class Thread : EntityBase, IThread
     {
+        [Hide]
+        public virtual Guid ForumId { get; set; }
+        private Forum _Forum;
         [Display(Name = "所属板块", Order = 0)]
         [Required]
-        public virtual Forum Forum { get; set; }
+        public virtual Forum Forum { get { return _Forum; } set { _Forum = value;ForumId = value?.Index ?? Guid.Empty; } }
 
+        [Hide]
+        public virtual Guid MemberId { get; set; }
+        private Member _Member;
         [Display(Name = "创建用户", Order = 10)]
         [Required]
         [Hide(IsHiddenOnView = false)]
-        public virtual Member Member { get; set; }
+        public virtual Member Member { get { return _Member; } set { _Member = value; MemberId = value?.Index ?? Guid.Empty; } }
 
         [Display(Name = "标题", Order = 20)]
         [Required]

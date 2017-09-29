@@ -9,17 +9,24 @@ using Wodsoft.Forum;
 namespace Wodsoft.Forum.Sample.Entity
 {
     [DisplayColumn("Content", "CreateDate", false)]
+    [EntityAuthentication(AllowAnonymous = false)]
     public class Post : EntityBase, IPost
     {
         [Required]
         public virtual string Content { get; set; }
 
+        [Hide]
+        public virtual Guid MemberId { get; set; }
+        private Member _Member;
         [Required]
         [Hide(IsHiddenOnView = false)]
-        public virtual Member Member { get; set; }
+        public virtual Member Member { get { return _Member; } set { _Member = value; MemberId = value?.Index ?? Guid.Empty; } }
 
+        [Hide]
+        public virtual Guid ThreadId { get; set; }
+        private Thread _Thread;
         [Required]
-        public virtual Thread Thread { get; set; }
+        public virtual Thread Thread { get { return _Thread; } set { _Thread = value; ThreadId = value?.Index ?? Guid.Empty; } }
 
         IMember IPost.Member { get { return Member; } set { Member = (Member)value; } }
 

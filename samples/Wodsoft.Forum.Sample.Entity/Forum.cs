@@ -12,7 +12,7 @@ namespace Wodsoft.Forum.Sample.Entity
 {
     [DisplayName("论坛")]
     [DisplayColumn("Name", "Order", false)]
-    [EntityAuthentication(AllowAnonymous = true,
+    [EntityAuthentication(AllowAnonymous = false,
         AddRolesRequired = new object[] { AdminType.Admin },
         EditRolesRequired = new object[] { AdminType.Admin },
         RemoveRolesRequired = new object[] { AdminType.Admin })]
@@ -23,16 +23,16 @@ namespace Wodsoft.Forum.Sample.Entity
 
         [Display(Name = "论坛名称", Order = 10)]
         [Required]
+        [Searchable]
         public virtual string Name { get; set; }
 
         [Hide]
-        [Column("BoardIndex")]
         public virtual Guid BoardId { get; set; }
         private Board _Board;
         [Display(Name = "所属板块", Order = 0)]
         [Required]
         [ForeignKey("BoardId")]
-        public virtual Board Board { get { return _Board; } set { _Board = value; BoardId = value != null ? value.Index : Guid.Empty; } }
+        public virtual Board Board { get { return _Board; } set { _Board = value; BoardId = value?.Index ?? Guid.Empty; } }
 
         [Display(Name = "图标", Order = 30)]
         [CustomDataType(CustomDataType.Image)]
