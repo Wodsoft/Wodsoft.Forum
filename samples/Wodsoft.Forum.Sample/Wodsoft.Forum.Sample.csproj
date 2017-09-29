@@ -11,10 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.0" />
-    <PackageReference Include="Wodsoft.ComBoost.Data" Version="3.0.0-beta-6-1" />
-    <PackageReference Include="Wodsoft.ComBoost.EntityFrameworkCore" Version="3.0.0-beta-6" />
-    <PackageReference Include="Wodsoft.ComBoost.Mvc.Data" Version="3.0.0-beta-6" />
-    <PackageReference Include="Wodsoft.ComBoost.Storage" Version="3.0.0-beta-6" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" />
+    <PackageReference Include="Wodsoft.ComBoost.Data" Version="3.0.0-beta-7" />
+    <PackageReference Include="Wodsoft.ComBoost.EntityFrameworkCore" Version="3.0.0-beta-7" />
+    <PackageReference Include="Wodsoft.ComBoost.Mvc.Data" Version="3.0.0-beta-7" />
+    <PackageReference Include="Wodsoft.ComBoost.Storage" Version="3.0.0-beta-7" />
   </ItemGroup>
 
  
@@ -23,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Wodsoft.Forum.MvcCore\Wodsoft.Forum.MvcCore.csproj" />
     <ProjectReference Include="..\Wodsoft.Forum.Sample.Domain\Wodsoft.Forum.Sample.Domain.csproj" />
   </ItemGroup>
 

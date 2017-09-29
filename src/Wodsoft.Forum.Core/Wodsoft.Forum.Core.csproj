@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Wodsoft.ComBoost.Data.Core" Version="3.0.0-beta-6" />
+    <PackageReference Include="Wodsoft.ComBoost.Data.Core" Version="3.0.0-beta-7" />
   </ItemGroup>
 
 </Project>
