@@ -33,12 +33,22 @@ namespace Wodsoft.Forum
 
         public static Task<IThread> ExecuteCreateThread(this ForumDomainService domain, IDomainContext context)
         {
-            return domain.ExecuteAsync<IDatabaseContext, IAuthenticationProvider, string, IThread>(context, domain.CreateThread);
+            return domain.ExecuteAsync<IDatabaseContext, string, IThread>(context, domain.CreateThread);
         }
 
-        public static Task<IThread> ExecuteEditThread(this ForumDomainService domain, IDomainContext context)
+        public static Task<IPost> ExecuteEditThread(this ForumDomainService domain, IDomainContext context)
         {
-            return domain.ExecuteAsync<IDatabaseContext, string, IThread>(context, domain.EditThread);
+            return domain.ExecuteAsync<IDatabaseContext, string, IPost>(context, domain.EditThread);
+        }
+
+        public static Task<IThread> ExecuteUpdateThread(this ForumDomainService domain, IDomainContext context)
+        {
+            return domain.ExecuteAsync<IDatabaseContext, IAuthenticationProvider, string, string, IThread>(context, domain.UpdateThread);
+        }
+
+        public static Task ExecuteDeleteThread(this ForumDomainService domain, IDomainContext context)
+        {
+            return domain.ExecuteAsync<IDatabaseContext, IAuthenticationProvider, string>(context, domain.DeleteThread);
         }
 
         public static Task<IViewModel<IPost>> ExecuteListPosts(this ForumDomainService domain, IDomainContext context)
@@ -54,6 +64,16 @@ namespace Wodsoft.Forum
         public static Task<IPost> ExecuteEditPost(this ForumDomainService domain, IDomainContext context)
         {
             return domain.ExecuteAsync<IDatabaseContext, string, IPost>(context, domain.EditPost);
+        }
+
+        public static Task<IPost> ExecuteUpdatePost(this ForumDomainService domain, IDomainContext context)
+        {
+            return domain.ExecuteAsync<IDatabaseContext, IAuthenticationProvider, string, string, IPost>(context, domain.UpdatePost);
+        }
+
+        public static Task ExecuteDeletePost(this ForumDomainService domain, IDomainContext context)
+        {
+            return domain.ExecuteAsync<IDatabaseContext, IAuthenticationProvider, string>(context, domain.DeletePost);
         }
     }
 }

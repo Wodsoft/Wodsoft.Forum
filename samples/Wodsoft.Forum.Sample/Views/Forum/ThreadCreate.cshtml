@@ -1,8 +1,8 @@
-﻿@model Forum
+﻿@model Thread
 <link href="~/lib/editor.md/css/editormd.css" rel="stylesheet" />
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a asp-action="Forum">论坛</a></li>
-    <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Forum", new { id = Model.Index }))">@Model.Name</a></li>
+    <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Forum", new { id = Model.Forum.Index }))">@Model.Forum.Name</a></li>
     <li class="breadcrumb-item active">发表帖子</li>
 </ol>
 <ul class="nav nav-tabs">
@@ -10,7 +10,7 @@
 </ul>
 <br />
 <form id="form" method="post" action="@Url.Action("ThreadCreate")" onsubmit="return false;">
-    <input type="hidden" name="ForumId" value="@Model.Index" />
+    <input type="hidden" name="ForumId" value="@Model.Forum.Index" />
     <div class="form-group">
         <input type="text" class="form-control" id="title" name="title" maxlength="20" placeholder="请输入标题" />
     </div>
@@ -56,7 +56,7 @@
 
         $('#ok').click(function () {
             $.ajax({
-                url :'@Url.Action("ThreadCreate")',
+                url :'@Url.Action("ThreadUpdate")',
                 data: new FormData(document.getElementById('form')),
                 contentType: false,
                 processData: false,

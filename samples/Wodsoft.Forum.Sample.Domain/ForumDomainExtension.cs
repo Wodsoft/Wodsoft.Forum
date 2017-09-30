@@ -18,7 +18,7 @@ namespace Wodsoft.Forum.Sample.Domain
 
         private Task Domain_ForumQuery(IDomainExecutionContext context, ComBoost.Data.EntityQueryEventArgs<IForum> e)
         {
-            e.Queryable = e.Queryable.Unwrap<IForum, Entity.Forum>().OrderBy(t => t.Order).Wrap<IForum, Entity.Forum>();
+            e.Queryable = e.Queryable.Unwrap<IForum, Entity.Forum>().Where(t => t.IsDisplay).OrderBy(t => t.Order).Wrap<IForum, Entity.Forum>();
             return Task.CompletedTask;
         }
     }

@@ -33,6 +33,10 @@ namespace Wodsoft.Forum.Sample.Entity
         public virtual string Title { get; set; }
 
         [Hide]
+        [Required]
+        public virtual bool IsDeleted { get; set; }
+
+        [Hide]
         public virtual ICollection<Post> Replies { get; set; }
 
         IForum IThread.Forum { get { return Forum; } set { Forum = (Forum)value; } }

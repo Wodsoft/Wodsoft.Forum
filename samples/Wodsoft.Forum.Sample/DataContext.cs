@@ -23,6 +23,8 @@ namespace Wodsoft.Forum.Sample
 
         public DbSet<Member> Member { get; set; }
 
+        public DbSet<MemberGroup> MemberGroup { get; set; }
+
         public DbSet<Entity.Forum> Forum { get; set; }
 
         public DbSet<Thread> Thread { get; set; }

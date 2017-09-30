@@ -23,6 +23,16 @@
         border-bottom: 1px solid rgb(242,242,242);
         padding: 2px 7px 7px 7px;
     }
+
+    .postTable .postTools {
+        border-top: 1px solid rgb(242,242,242);
+        padding: 2px 7px 0px 7px;
+        margin-bottom: -5px;
+    }
+
+        .postTable .postTools a + a {
+            margin-left: 10px;
+        }
 </style>
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">论坛</a></li>
@@ -56,23 +66,58 @@
                 <td>
                     <div class="postTitle">
                         <small>发表于 @(item.CreateDate.ToString("yyyy-MM-dd HH:mm:ss"))</small>
+                        @if (item.CreateDate != item.EditDate)
+                        {
+                            <small>最后编辑于 @(item.EditDate.ToString("yyyy-MM-dd HH:mm:ss"))</small>
+                        }
                     </div>
                     <div class="postContent" id="C_@item.Index">
-                        <textarea style="display: none">@Html.Raw(item.Content)</textarea>
+                        @if (item.IsDeleted)
+                        {
+                            <div class="alert alert-warning" role="alert">
+                                此回复已被删除。
+                            </div>
+                        }
+                        else
+                        {
+                            <textarea style="display: none">@Html.Raw(item.Content)</textarea>
+                        }
+                    </div>
+                    <div class="postTools">
+                        @if (User.IsInDynamicRole(AdminType.SuperModerator) || User.GetUserId() == item.MemberId.ToString())
+                        {
+                            <a class="octicon" href="@(item.CreateDate == thread.CreateDate ? Url.Action("ThreadEdit", new { id = thread.Index }) : Url.Action("PostEdit", new { id = item.Index }))">
+                                <img src="~/lib/octicons/lib/svg/pencil.svg" /><span>编辑</span>
+                            </a>
+                        }
+                        @if (User.IsInDynamicRole(AdminType.SuperModerator))
+                        {
+                            <a class="octicon" href="@(item.CreateDate == thread.CreateDate ? Url.Action("ThreadDelete", new { id = thread.Index }) : Url.Action("PostDelete", new { id = item.Index }))">
+                                <img src="~/lib/octicons/lib/svg/x.svg" /><span>删除</span>
+                            </a>
+                        }
                     </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-<div class="row">
-    <div class="col-sm-8">
-        <a class="btn btn-info" href="@Html.Raw(Url.Action("PostCreate", new { id = thread.Index }))">回复</a>
+<form>
+    <div class="row">
+        <div class="col">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a class="btn btn-info" href="@Html.Raw(Url.Action("PostCreate", new { id = thread.Index }))">回复</a>
+            }
+        </div>
+        <div class="col-auto">
+            @Html.Partial("_Pagination", Model)
+        </div>
+        <div class="col-auto">
+            <a class="btn btn-secondary" href="@Html.Raw(Url.Action("Forum", new { id = thread.Forum.Index }))"><span class="glyphicon glyphicon-triangle-left"></span> 返回列表</a>
+        </div>
     </div>
-    <div class="col-sm-4 text-right">
-        <a class="btn btn-secondary" href="@Html.Raw(Url.Action("Forum", new { id = thread.Forum.Index }))"><span class="glyphicon glyphicon-triangle-left"></span> 返回列表</a>
-    </div>
-</div>
+</form>
 @if (User.Identity.IsAuthenticated)
 {
     <br />
@@ -125,7 +170,7 @@
                     alert('回复内容不能为空。');
                 }
                 $.ajax({
-                    url: '@Url.Action("PostCreate")',
+                    url: '@Url.Action("PostUpdate")',
                     type: 'POST',
                     data: {
                         threadId: '@thread.Index',

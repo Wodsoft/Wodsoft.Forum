@@ -13,5 +13,7 @@ namespace Wodsoft.Forum
         string Content { get; set; }
 
         IThread Thread { get; set; }
+
+        bool IsDeleted { get; set; }
     }
 }

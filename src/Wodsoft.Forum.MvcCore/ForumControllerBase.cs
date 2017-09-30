@@ -89,55 +89,121 @@ namespace Wodsoft.Forum.Mvc
         {
             return CreateDomainContext();
         }
+        [ComBoostAuthorize]
         public virtual async Task<IActionResult> ThreadCreate()
         {
             var context = GetThreadCreateDomainContext();
             var domain = DomainProvider.GetService<ForumDomainService>();
-            if (Request.Method == "POST")
+            try
             {
-                try
+                var thread = await domain.ExecuteCreateThread(context);
+                return View(thread);
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest();
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
                 {
-                    var thread = await domain.ExecuteCreateThread(context);
-                    return Json(new
-                    {
-                        ThreadId = thread.Index
-                    });
-                }
-                catch (DomainServiceException ex)
-                {
-                    if (ex.InnerException is KeyNotFoundException)
-                        return NotFound();
-                    else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
-                        return BadRequest(ex.InnerException.Message);
-                    else if (ex.InnerException is UnauthorizedAccessException)
-                        return Unauthorized();
-                    else
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
             }
-            else
+        }
+
+        protected virtual ControllerDomainContext GetThreadEditDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> ThreadEdit()
+        {
+            var context = GetThreadEditDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
             {
-                try
+                var post = await domain.ExecuteEditThread(context);
+                return View(post);
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest();
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
                 {
-                    var thread = await domain.ExecuteGetForum(context);
-                    return View(thread);
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
-                catch (DomainServiceException ex)
+            }
+        }
+
+        protected virtual ControllerDomainContext GetThreadUpdateDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> ThreadUpdate()
+        {
+            var context = GetThreadUpdateDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
+            {
+                var thread = await domain.ExecuteUpdateThread(context);
+                return Json(new
                 {
-                    if (ex.InnerException is KeyNotFoundException)
-                        return NotFound();
-                    else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
-                        return BadRequest();
-                    else if (ex.InnerException is UnauthorizedAccessException)
-                        return Unauthorized();
-                    else
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    ThreadId = thread.Index
+                });
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest(ex.InnerException.Message);
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+        }
+
+        protected virtual ControllerDomainContext GetThreadDeleteDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> ThreadDelete()
+        {
+            var context = GetThreadUpdateDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
+            {
+                await domain.ExecuteDeleteThread(context);
+                return Ok();
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest(ex.InnerException.Message);
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
             }
         }
@@ -146,48 +212,110 @@ namespace Wodsoft.Forum.Mvc
         {
             return CreateDomainContext();
         }
+        [ComBoostAuthorize]
         public virtual async Task<IActionResult> PostCreate()
         {
             var context = GetPostCreateDomainContext();
             var domain = DomainProvider.GetService<ForumDomainService>();
-            if (Request.Method == "POST")
+            try
             {
-                try
+                var post = await domain.ExecuteCreatePost(context);
+                return View(post);
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound(ex.InnerException.Message);
+                else
                 {
-                    var post = await domain.ExecuteCreatePost(context);
-                    return Ok();
-                }
-                catch (DomainServiceException ex)
-                {
-                    if (ex.InnerException is KeyNotFoundException)
-                        return NotFound();
-                    else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
-                        return BadRequest(ex.InnerException.Message);
-                    else if (ex.InnerException is UnauthorizedAccessException)
-                        return Unauthorized();
-                    else
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
             }
-            else
+        }
+
+        protected virtual ControllerDomainContext GetPostEditDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> PostEdit()
+        {
+            var context = GetPostEditDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
             {
-                try
+                var post = await domain.ExecuteEditPost(context);
+                return View(post);
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound(ex.InnerException.Message);
+                else
                 {
-                    var thread = await domain.ExecuteGetThread(context);
-                    return View(thread);
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
-                catch (DomainServiceException ex)
+            }
+        }
+
+        protected virtual ControllerDomainContext GetPostUpdateDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> PostUpdate()
+        {
+            var context = GetPostUpdateDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
+            {
+                var post = await domain.ExecuteUpdatePost(context);
+                return Ok();
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest(ex.InnerException.Message);
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
                 {
-                    if (ex.InnerException is KeyNotFoundException)
-                        return NotFound(ex.InnerException.Message);
-                    else
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
+            }
+        }
+
+        protected virtual ControllerDomainContext GetPostDeleteDomainContext()
+        {
+            return CreateDomainContext();
+        }
+        [ComBoostAuthorize]
+        public virtual async Task<IActionResult> PostDelete()
+        {
+            var context = GetPostDeleteDomainContext();
+            var domain = DomainProvider.GetService<ForumDomainService>();
+            try
+            {
+                await domain.ExecuteDeletePost(context);
+                return Ok();
+            }
+            catch (DomainServiceException ex)
+            {
+                if (ex.InnerException is KeyNotFoundException)
+                    return NotFound();
+                else if (ex.InnerException is ArgumentException || ex.InnerException is ArgumentNullException || ex.InnerException is ArgumentOutOfRangeException)
+                    return BadRequest(ex.InnerException.Message);
+                else if (ex.InnerException is UnauthorizedAccessException)
+                    return Unauthorized();
+                else
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
                 }
             }
         }

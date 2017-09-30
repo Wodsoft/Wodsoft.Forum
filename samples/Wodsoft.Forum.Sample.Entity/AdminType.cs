@@ -8,6 +8,8 @@ namespace Wodsoft.Forum.Sample.Entity
     public enum AdminType
     {
         None = 0,
-        Admin = 1
+        Moderator = 1,
+        SuperModerator = 2,
+        Admin = 3
     }
 }

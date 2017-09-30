@@ -41,8 +41,8 @@ namespace Wodsoft.Forum
             return (IForum[])obj;
         }
 
-        public static readonly DomainServiceEventRoute ForumReadEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IForum>>("ForumRead", typeof(ForumDomainService));
-        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IForum>> ForumRead { add { AddAsyncEventHandler(ForumReadEvent, value); } remove { RemoveAsyncEventHandler(ForumReadEvent, value); } }
+        public static readonly DomainServiceEventRoute ForumDetailEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IForum>>("ForumDetail", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IForum>> ForumDetail { add { AddAsyncEventHandler(ForumDetailEvent, value); } remove { RemoveAsyncEventHandler(ForumDetailEvent, value); } }
         public async Task<IForum> GetForum([FromService]IDatabaseContext databaseContext, [FromValue]string id)
         {
             var context = databaseContext.GetWrappedContext<IForum>();
@@ -51,7 +51,7 @@ namespace Wodsoft.Forum
                 throw new DomainServiceException(new KeyNotFoundException(id));
             await item.LoadAsync(t => t.Board);
             var e = new EntityFilterEventArgs<IForum>(item);
-            await RaiseAsyncEvent(ForumReadEvent, e);
+            await RaiseAsyncEvent(ForumDetailEvent, e);
             return item;
         }
 
@@ -64,7 +64,7 @@ namespace Wodsoft.Forum
             var converter = TypeDescriptor.GetConverter(EntityDescriptor.GetMetadata<IThread>().KeyType);
             var idObj = converter.ConvertFrom(id);
             var context = databaseContext.GetWrappedContext<IThread>();
-            var queryable = context.Query().Include(t => t.Member).Where(t => t.Forum.Index == idObj);
+            var queryable = context.Query().Include(t => t.Member).Where(t => t.Forum.Index == idObj && !t.IsDeleted);
             var e = new EntityQueryEventArgs<IThread>(queryable);
             await RaiseAsyncEvent(ThreadQueryEvent, e);
             queryable = e.Queryable;
@@ -83,8 +83,8 @@ namespace Wodsoft.Forum
             return (IViewModel<IThread>)model;
         }
 
-        public static readonly DomainServiceEventRoute ThreadReadEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadRead", typeof(ForumDomainService));
-        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadRead { add { AddAsyncEventHandler(ThreadReadEvent, value); } remove { RemoveAsyncEventHandler(ThreadReadEvent, value); } }
+        public static readonly DomainServiceEventRoute ThreadDetailEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadDetail", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadDetail { add { AddAsyncEventHandler(ThreadDetailEvent, value); } remove { RemoveAsyncEventHandler(ThreadDetailEvent, value); } }
         public async Task<IThread> GetThread([FromService]IDatabaseContext databaseContext, [FromValue]string id)
         {
             var context = databaseContext.GetWrappedContext<IThread>();
@@ -94,66 +94,50 @@ namespace Wodsoft.Forum
             var forum = await item.LoadAsync(t => t.Forum);
             await forum.LoadAsync(t => t.Board);
             var e = new EntityFilterEventArgs<IThread>(item);
-            await RaiseAsyncEvent(ThreadReadEvent, e);
+            await RaiseAsyncEvent(ThreadDetailEvent, e);
             return item;
         }
 
-        public static readonly DomainServiceEventRoute ForumWriteEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IForum>>("ForumWrite", typeof(ForumDomainService));
-        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IForum>> ForumWrite { add { AddAsyncEventHandler(ForumWriteEvent, value); } remove { RemoveAsyncEventHandler(ForumWriteEvent, value); } }
         public static readonly DomainServiceEventRoute ThreadCreateEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadCreate", typeof(ForumDomainService));
         public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadCreate { add { AddAsyncEventHandler(ThreadCreateEvent, value); } remove { RemoveAsyncEventHandler(ThreadCreateEvent, value); } }
-        public static readonly DomainServiceEventRoute PostUpdateEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IPost>>("PostUpdate", typeof(ForumDomainService));
-        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IPost>> PostUpdate { add { AddAsyncEventHandler(PostUpdateEvent, value); } remove { RemoveAsyncEventHandler(PostUpdateEvent, value); } }
-        public async Task<IThread> CreateThread([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue]string forumId)
+        public async Task<IThread> CreateThread([FromService]IDatabaseContext databaseContext, [FromValue]string id)
         {
+            var converter = TypeDescriptor.GetConverter(EntityDescriptor.GetMetadata<IForum>().KeyType);
+            var idObj = converter.ConvertFrom(id);
             IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
             IForum forum;
             IThread thread;
             {
                 var context = databaseContext.GetWrappedContext<IForum>();
-                forum = await context.GetAsync(forumId);
+                forum = await context.Query().Include(t => t.Board).SingleOrDefaultAsync(t => t.Index == idObj.Wrap());
                 if (forum == null)
-                    throw new DomainServiceException(new KeyNotFoundException(forumId));
-                var e = new EntityFilterEventArgs<IForum>(forum);
-                await RaiseAsyncEvent(ForumWriteEvent, e);
+                    throw new DomainServiceException(new KeyNotFoundException(id));
             }
             {
                 var context = databaseContext.GetWrappedContext<IThread>();
                 thread = context.Create();
                 thread.Forum = forum;
-                thread.Member = await authenticationProvider.GetAuthentication().GetUserAsync<IMember>();
-                thread.Title = valueProvider.GetValue<string>("title");
                 var e = new EntityFilterEventArgs<IThread>(thread);
                 await RaiseAsyncEvent(ThreadCreateEvent, e);
-                context.Add(thread);
             }
-            {
-                var context = databaseContext.GetWrappedContext<IPost>();
-                var post = context.Create();
-                post.Thread = thread;
-                post.Member = thread.Member;
-                post.Content = valueProvider.GetValue<string>("content");
-                var e = new EntityFilterEventArgs<IPost>(post);
-                await RaiseAsyncEvent(PostUpdateEvent, e);
-                context.Add(post);
-            }
-            await databaseContext.SaveAsync();
             return thread;
         }
 
         public static readonly DomainServiceEventRoute ThreadEditEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadEdit", typeof(ForumDomainService));
         public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadEdit { add { AddAsyncEventHandler(ThreadEditEvent, value); } remove { RemoveAsyncEventHandler(ThreadEditEvent, value); } }
-        public async Task<IThread> EditThread([FromService]IDatabaseContext databaseContext, [FromValue]string id)
+        public async Task<IPost> EditThread([FromService]IDatabaseContext databaseContext, [FromValue]string id)
         {
+            var converter = TypeDescriptor.GetConverter(EntityDescriptor.GetMetadata<IThread>().KeyType);
+            var idObj = converter.ConvertFrom(id);
             IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
             IThread thread;
             {
                 var context = databaseContext.GetWrappedContext<IThread>();
-                thread = await context.GetAsync(id);
-                thread.Title = valueProvider.GetValue<string>("title");
+                thread = await context.Include(t => t.Forum.Board).SingleOrDefaultAsync(t => t.Index == idObj);
+                if (thread == null)
+                    throw new DomainServiceException(new KeyNotFoundException(id));
                 var e = new EntityFilterEventArgs<IThread>(thread);
                 await RaiseAsyncEvent(ThreadEditEvent, e);
-                context.Update(thread);
             }
             {
                 var context = databaseContext.GetWrappedContext<IPost>();
@@ -161,13 +145,93 @@ namespace Wodsoft.Forum
                 var post = await posts.OrderBy(t => t.CreateDate).FirstOrDefaultAsync();
                 if (post == null)
                     throw new InvalidOperationException("回贴不存在。");
-                post.Content = valueProvider.GetValue<string>("content");
-                var e = new EntityFilterEventArgs<IPost>(post);
-                await RaiseAsyncEvent(PostUpdateEvent, e);
-                context.Update(post);
+                post.Thread = thread;
+                return post;
+            }
+        }
+
+        public static readonly DomainServiceEventRoute ThreadUpdateEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadUpdate", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadUpdate { add { AddAsyncEventHandler(ThreadUpdateEvent, value); } remove { RemoveAsyncEventHandler(ThreadUpdateEvent, value); } }
+        public async Task<IThread> UpdateThread([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue(false)]string id, [FromValue(false)]string forumId)
+        {
+            IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
+            IThread thread;
+            {
+                var context = databaseContext.GetWrappedContext<IThread>();
+                if (string.IsNullOrEmpty(id))
+                {
+                    if (string.IsNullOrEmpty(forumId))
+                        throw new DomainServiceException(new ArgumentNullException(nameof(forumId)));
+                    var forumContext = databaseContext.GetWrappedContext<IForum>();
+                    var forum = await forumContext.GetAsync(forumId);
+                    if (forum == null)
+                        throw new DomainServiceException(new KeyNotFoundException(forumId));
+                    thread = context.Create();
+                    thread.Forum = forum;
+                    thread.Member = await authenticationProvider.GetAuthentication().GetUserAsync<IMember>();
+                }
+                else
+                {
+                    thread = await context.GetAsync(id);
+                    if (thread == null)
+                        throw new DomainServiceException(new KeyNotFoundException(id));
+                }
+                thread.Title = valueProvider.GetValue<string>("title");
+                var e = new EntityFilterEventArgs<IThread>(thread);
+                await RaiseAsyncEvent(ThreadUpdateEvent, e);
+                if (string.IsNullOrEmpty(id))
+                    context.Add(thread);
+                else
+                    context.Update(thread);
+            }
+            {
+                var context = databaseContext.GetWrappedContext<IPost>();
+                IPost post;
+                if (string.IsNullOrEmpty(id))
+                {
+                    post = context.Create();
+                    post.CreateDate = thread.CreateDate;
+                    post.Thread = thread;
+                    post.Member = thread.Member;
+                }
+                else
+                {
+                    var posts = await thread.LoadAsync(t => t.Replies);
+                    post = await posts.OrderBy(t => t.CreateDate).FirstOrDefaultAsync();
+                    if (post == null)
+                        throw new InvalidOperationException("回贴不存在。");
+                }
+                post.Content = valueProvider.GetRequiredValue<string>("content");
+                if (string.IsNullOrEmpty(id))
+                    context.Add(post);
+                else
+                    context.Update(post);
             }
             await databaseContext.SaveAsync();
             return thread;
+        }
+
+        public static readonly DomainServiceEventRoute ThreadDeleteEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadDelete", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadDelete { add { AddAsyncEventHandler(ThreadDeleteEvent, value); } remove { RemoveAsyncEventHandler(ThreadDeleteEvent, value); } }
+        public async Task DeleteThread([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue]string id)
+        {
+            var context = databaseContext.GetWrappedContext<IThread>();
+            var thread = await context.GetAsync(id);
+            if (thread == null)
+                throw new DomainServiceException(new KeyNotFoundException(id));
+            var e = new EntityFilterEventArgs<IThread>(thread);
+            await RaiseAsyncEvent(ThreadDeleteEvent, e);
+            await thread.LoadAsync(t => t.Member);
+            if (authenticationProvider.GetAuthentication().GetUserId() == thread.Member.Index.ToString())
+            {
+                context.Remove(thread);
+            }
+            else
+            {
+                thread.IsDeleted = true;
+                context.Update(thread);
+            }
+            await databaseContext.SaveAsync();
         }
 
         private Type _PostViewModelType = typeof(ViewModel<>).MakeGenericType(EntityDescriptor.GetMetadata<IPost>().Type);
@@ -198,42 +262,79 @@ namespace Wodsoft.Forum
             return (IViewModel<IPost>)model;
         }
 
-        public static readonly DomainServiceEventRoute ThreadWriteEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IThread>>("ThreadWrite", typeof(ForumDomainService));
-        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IThread>> ThreadWrite { add { AddAsyncEventHandler(ThreadWriteEvent, value); } remove { RemoveAsyncEventHandler(ThreadWriteEvent, value); } }
-        public async Task<IPost> CreatePost([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue]string threadId)
+        public static readonly DomainServiceEventRoute PostCreateEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IPost>>("PostCreate", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IPost>> PostCreate { add { AddAsyncEventHandler(PostCreateEvent, value); } remove { RemoveAsyncEventHandler(PostCreateEvent, value); } }
+        public async Task<IPost> CreatePost([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue]string id)
         {
+            var converter = TypeDescriptor.GetConverter(EntityDescriptor.GetMetadata<IThread>().KeyType);
+            var idObj = converter.ConvertFrom(id);
             IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
             IThread thread;
             IPost post;
             {
                 var context = databaseContext.GetWrappedContext<IThread>();
-                thread = await context.GetAsync(threadId);
+                thread = await context.Include(t => t.Forum.Board).SingleOrDefaultAsync(t => t.Index == idObj);
                 if (thread == null)
-                    throw new DomainServiceException(new KeyNotFoundException(threadId));
-                var e = new EntityFilterEventArgs<IThread>(thread);
-                await RaiseAsyncEvent(ThreadWriteEvent, e);
+                    throw new DomainServiceException(new KeyNotFoundException(id));
             }
             {
                 var context = databaseContext.GetWrappedContext<IPost>();
                 post = context.Create();
                 post.Thread = thread;
-                post.Member = await authenticationProvider.GetAuthentication().GetUserAsync<IMember>();
-                post.Content = valueProvider.GetValue<string>("content");
                 var e = new EntityFilterEventArgs<IPost>(post);
-                await RaiseAsyncEvent(PostUpdateEvent, e);
-                context.Add(post);
+                await RaiseAsyncEvent(PostCreateEvent, e);
             }
-            await databaseContext.SaveAsync();
             return post;
         }
 
+        public static readonly DomainServiceEventRoute PostEditEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IPost>>("PostEdit", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IPost>> PostEdit { add { AddAsyncEventHandler(PostEditEvent, value); } remove { RemoveAsyncEventHandler(PostEditEvent, value); } }
         public async Task<IPost> EditPost([FromService]IDatabaseContext databaseContext, [FromValue]string id)
+        {
+            var converter = TypeDescriptor.GetConverter(EntityDescriptor.GetMetadata<IPost>().KeyType);
+            var idObj = converter.ConvertFrom(id);
+            IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
+            var context = databaseContext.GetWrappedContext<IPost>();
+            var post = await context.Include(t => t.Thread.Forum.Board).SingleOrDefaultAsync(t => t.Index == idObj);
+            if (post == null)
+                throw new DomainServiceException(new KeyNotFoundException(id));
+            var e = new EntityFilterEventArgs<IPost>(post);
+            await RaiseAsyncEvent(PostEditEvent, e);
+            return post;
+        }
+
+        public static readonly DomainServiceEventRoute PostUpdateEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IPost>>("PostUpdate", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IPost>> PostUpdate { add { AddAsyncEventHandler(PostUpdateEvent, value); } remove { RemoveAsyncEventHandler(PostUpdateEvent, value); } }
+        public async Task<IPost> UpdatePost([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue(false)]string id, [FromValue(false)]string threadId)
         {
             IValueProvider valueProvider = Context.DomainContext.GetRequiredService<IValueProvider>();
             IPost post;
+            if (string.IsNullOrEmpty(id))
+            {
+                IThread thread;
+                {
+                    var context = databaseContext.GetWrappedContext<IThread>();
+                    thread = await context.GetAsync(threadId);
+                    if (thread == null)
+                        throw new DomainServiceException(new KeyNotFoundException(threadId));
+                }
+                {
+                    var context = databaseContext.GetWrappedContext<IPost>();
+                    post = context.Create();
+                    post.Thread = thread;
+                    post.Member = await authenticationProvider.GetAuthentication().GetUserAsync<IMember>();
+                    post.Content = valueProvider.GetValue<string>("content");
+                    var e = new EntityFilterEventArgs<IPost>(post);
+                    await RaiseAsyncEvent(PostUpdateEvent, e);
+                    context.Add(post);
+                }
+            }
+            else
             {
                 var context = databaseContext.GetWrappedContext<IPost>();
                 post = await context.GetAsync(id);
+                if (post == null)
+                    throw new DomainServiceException(new KeyNotFoundException(id));
                 post.Content = valueProvider.GetValue<string>("content");
                 var e = new EntityFilterEventArgs<IPost>(post);
                 await RaiseAsyncEvent(PostUpdateEvent, e);
@@ -243,6 +344,27 @@ namespace Wodsoft.Forum
             return post;
         }
 
-
+        public static readonly DomainServiceEventRoute PostDeleteEvent = DomainServiceEventRoute.RegisterAsyncEvent<EntityFilterEventArgs<IPost>>("PostDelete", typeof(ForumDomainService));
+        public event DomainServiceAsyncEventHandler<EntityFilterEventArgs<IPost>> PostDelete { add { AddAsyncEventHandler(PostDeleteEvent, value); } remove { RemoveAsyncEventHandler(PostDeleteEvent, value); } }
+        public async Task DeletePost([FromService]IDatabaseContext databaseContext, [FromService]IAuthenticationProvider authenticationProvider, [FromValue]string id)
+        {
+            var context = databaseContext.GetWrappedContext<IPost>();
+            var post = await context.GetAsync(id);
+            if (post == null)
+                throw new DomainServiceException(new KeyNotFoundException(id));
+            var e = new EntityFilterEventArgs<IPost>(post);
+            await RaiseAsyncEvent(PostDeleteEvent, e);
+            await post.LoadAsync(t => t.Member);
+            if (authenticationProvider.GetAuthentication().GetUserId() == post.Member.Index.ToString())
+            {
+                context.Remove(post);
+            }
+            else
+            {
+                post.IsDeleted = true;
+                context.Update(post);
+            }
+            await databaseContext.SaveAsync();
+        }
     }
 }

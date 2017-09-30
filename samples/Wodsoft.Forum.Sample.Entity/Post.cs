@@ -27,6 +27,10 @@ namespace Wodsoft.Forum.Sample.Entity
         private Thread _Thread;
         [Required]
         public virtual Thread Thread { get { return _Thread; } set { _Thread = value; ThreadId = value?.Index ?? Guid.Empty; } }
+        
+        [Hide]
+        [Required]
+        public virtual bool IsDeleted { get; set; }
 
         IMember IPost.Member { get { return Member; } set { Member = (Member)value; } }
 

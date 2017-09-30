@@ -33,3 +33,10 @@
         display: none;
     }
 }
+
+.octicon span{
+    margin-left: 4px;
+    font-size: 14px;
+    color: black;
+    vertical-align: middle;
+}

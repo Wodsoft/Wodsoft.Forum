@@ -35,10 +35,46 @@ namespace Wodsoft.Forum.Sample.Controllers
             return base.ThreadCreate();
         }
 
-        [Route("Thread/Reply/{id}")]
+        [Route("Thread/Edit/{id}")]
+        public override Task<IActionResult> ThreadEdit()
+        {
+            return base.ThreadEdit();
+        }
+
+        [Route("Thread/Update")]
+        public override Task<IActionResult> ThreadUpdate()
+        {
+            return base.ThreadUpdate();
+        }
+
+        [Route("Thread/Delete")]
+        public override Task<IActionResult> ThreadDelete()
+        {
+            return base.ThreadDelete();
+        }
+
+        [Route("Post/Create/{id}")]
         public override Task<IActionResult> PostCreate()
         {
             return base.PostCreate();
+        }
+
+        [Route("Post/Edit/{id}")]
+        public override Task<IActionResult> PostEdit()
+        {
+            return base.PostEdit();
+        }
+
+        [Route("Post/Update")]
+        public override Task<IActionResult> PostUpdate()
+        {
+            return base.PostUpdate();
+        }
+
+        [Route("Post/Delete")]
+        public override Task<IActionResult> PostDelete()
+        {
+            return base.PostDelete();
         }
     }
 }

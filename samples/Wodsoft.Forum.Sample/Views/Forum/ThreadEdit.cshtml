@@ -2,27 +2,26 @@
 <link href="~/lib/editor.md/css/editormd.css" rel="stylesheet" />
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a asp-action="Forum">论坛</a></li>
-    <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Board", new { id = Model.Thread.Forum.Board.Index }))">@Model.Thread.Forum.Board.Name</a></li>
     <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Forum", new { id = Model.Thread.Forum.Index }))">@Model.Thread.Forum.Name</a></li>
     <li class="breadcrumb-item"><a href="@Html.Raw(Url.Action("Thread", new { id = Model.Thread.Index }))">@Model.Thread.Title</a></li>
-    <li class="breadcrumb-item active">发表回复</li>
+    <li class="breadcrumb-item active">编辑帖子</li>
 </ol>
 <ul class="nav nav-tabs">
-    <li class="nav-item"><a class="nav-link active" href="#">发表回复</a></li>
+    <li class="nav-item"><a class="nav-link active" href="#">编辑帖子</a></li>
 </ul>
 <br />
-<form id="form" method="post" action="@Url.Action("PostCreate")" onsubmit="return false;">
-    <input type="hidden" name="ThreadId" value="@Model.Thread.Index" />
+<form id="form" method="post" action="@Url.Action("ThreadCreate")" onsubmit="return false;">
+    <input type="hidden" name="id" value="@Model.Thread.Index" />
     <div class="form-group">
-        <label>回复：@Model.Thread.Title</label>
+        <input type="text" class="form-control" id="title" name="title" maxlength="20" value="@Model.Thread.Title" placeholder="请输入标题" />
     </div>
     <div class="form-group">
         <div id="content">
-            <textarea class="form-control" name="content" style="display:none;"></textarea>
+            <textarea class="form-control" name="content" style="display:none;">@Html.Raw(Model.Content)</textarea>
         </div>
     </div>
     <div class="form-group">
-        <button id="ok" type="button" class="btn btn-success">发表</button>
+        <button id="ok" type="button" class="btn btn-success">编辑</button>
     </div>
 </form>
 <div class="modal fade" id="dialog">
@@ -55,18 +54,20 @@
             });
         });
 
+
         $('#ok').click(function () {
             $.ajax({
-                url :'@Url.Action("PostUpdate")',
+                url :'@Url.Action("ThreadUpdate")',
                 data: new FormData(document.getElementById('form')),
                 contentType: false,
                 processData: false,
                 type: 'POST',
+                dataType: 'json',
                 success: function (result) {
                     $('#dialogOK').click(function () {
-                        window.location = '@Url.Action("Thread", new { id = Model.Thread.Index })';
+                        window.location = '/Thread/' + result.threadId;
                     });
-                    $('#dialogContent').html('发表成功。');
+                    $('#dialogContent').html('编辑成功。');
                     $('#dialog').modal();
                 },
                 error: function (result) {

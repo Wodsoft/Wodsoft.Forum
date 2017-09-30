@@ -33,16 +33,17 @@ namespace Wodsoft.Forum.Sample.Domain
 
         protected override async Task<IPermission> GetPermissionByIdentity(string identity)
         {
-            var memberContext = DatabaseContext.GetWrappedContext<Member>();
-            var item = await memberContext.GetAsync(identity);
+            var memberContext = DatabaseContext.GetContext<Member>();
+            Guid id = Guid.Parse(identity);
+            var item = await memberContext.Query().Include(t => t.Group).Where(t => t.Index == id).SingleOrDefaultAsync();
             return item;
         }
 
         protected override async Task<IPermission> GetPermissionByUsername(string username)
         {
             username = username.ToLower();
-            var memberContext = DatabaseContext.GetWrappedContext<Member>();
-            var item = await memberContext.SingleOrDefaultAsync(memberContext.Query().Where(t => t.Username.ToLower() == username));
+            var memberContext = DatabaseContext.GetContext<Member>();
+            var item = await memberContext.Query().Include(t => t.Group).Where(t => t.Username.ToLower() == username).SingleOrDefaultAsync();
             return item;
         }
 

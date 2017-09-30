@@ -29,7 +29,7 @@ namespace Wodsoft.Forum.Sample.Entity
         [Display(Name = "排序", Order = 20)]
         [Required]
         public virtual int Order { get; set; }
-
+        
         [Hide]
         public virtual ICollection<Forum> Forums { get; set; }
 

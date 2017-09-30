@@ -6,7 +6,8 @@
     "jquery": "3.2.1",
     "jquery-validation": "1.17.0",
     "jquery-validation-unobtrusive": "3.2.6",
-    "editor.md": "v1.5.0"
+    "editor.md": "v1.5.0",
+    "octicons": "v6.0.1"
   },
   "resolutions": {
     "bootstrap": "v4.0.0-beta",

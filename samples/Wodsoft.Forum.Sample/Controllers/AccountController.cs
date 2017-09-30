@@ -95,23 +95,53 @@ namespace Wodsoft.Forum.Sample.Controllers
             if (await context.Board.CountAsync() == 0)
             {
                 Board board = new Board();
-                board.Index = new Guid("80000000-1000-0000-0000-000000000001");
+                board.Index = new Guid("80000000-1000-0000-0001-000000000000");
                 board.Name = "默认板块";
                 board.CreateDate = board.EditDate = DateTime.Now;
                 board.Description = "论坛初始化创建的默认板块。";
                 context.Board.Add(board);
 
                 Entity.Forum forum = new Entity.Forum();
-                forum.Index = new Guid("80000000-1000-0000-0000-000000000002");
+                forum.Index = new Guid("80000000-1000-0000-0002-000000000000");
                 forum.Board = board;
                 forum.Name = "默认论坛";
+                forum.IsDisplay = true;
                 forum.CreateDate = board.EditDate = DateTime.Now;
                 forum.Description = "论坛初始化创建的默认论坛。";
                 context.Forum.Add(forum);
 
+                MemberGroup adminGroup = new MemberGroup();
+                adminGroup.Index = new Guid("80000000-1000-0000-0003-000000000000");
+                adminGroup.Name = "管理员";
+                adminGroup.IsSystem = true;
+                adminGroup.CreateDate = board.EditDate = DateTime.Now;
+                context.MemberGroup.Add(adminGroup);
+
+                MemberGroup superModeratorGroup = new MemberGroup();
+                superModeratorGroup.Index = new Guid("80000000-1000-0000-0003-000000000001");
+                superModeratorGroup.Name = "超级版主";
+                superModeratorGroup.IsSystem = true;
+                superModeratorGroup.CreateDate = board.EditDate = DateTime.Now;
+                context.MemberGroup.Add(superModeratorGroup);
+
+                MemberGroup moderatorGroup = new MemberGroup();
+                moderatorGroup.Index = new Guid("80000000-1000-0000-0003-000000000002");
+                moderatorGroup.Name = "版主";
+                moderatorGroup.IsSystem = true;
+                moderatorGroup.CreateDate = board.EditDate = DateTime.Now;
+                context.MemberGroup.Add(moderatorGroup);
+
+                MemberGroup normalGroup = new MemberGroup();
+                normalGroup.Index = new Guid("80000000-1000-0000-0003-000000000003");
+                normalGroup.Name = "普通用户";
+                normalGroup.IsSystem = false;
+                normalGroup.CreateDate = board.EditDate = DateTime.Now;
+                context.MemberGroup.Add(normalGroup);
+
                 Member admin = new Member();
-                admin.Index = new Guid("80000000-1000-0000-0000-000000000003");
+                admin.Index = new Guid("80000000-1000-0000-0004-000000000000");
                 admin.Username = "admin";
+                admin.Group = adminGroup;
                 admin.SetPassword("admin");
                 admin.CreateDate = board.EditDate = DateTime.Now;
                 context.Member.Add(admin);

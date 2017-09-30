@@ -18,7 +18,7 @@
         <div class="form-group">
             <button type="button" onclick="submitForm()" class="btn btn-primary">注册</button>
             已有账号？点击
-            <a href="@Html.Raw(Url.Action("SignIn", new { returnUrl = Context.Request.Query["returnUrl"].Count > 0 ? Context.Request.Query["returnUrl"][0] : Url.Action("Index", "Home") }))">登录</a>。
+            <a href="@Html.Raw(Url.Action("SignIn", new { returnUrl = Context.Request.Query["returnUrl"].Count > 0 ? Context.Request.Query["returnUrl"][0] : Url.Action("Board", "Forum") }))">登录</a>。
         </div>
     </form>
 </div>

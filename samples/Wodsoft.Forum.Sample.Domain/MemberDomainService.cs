@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Wodsoft.ComBoost;
@@ -21,7 +22,7 @@ namespace Wodsoft.Forum.Sample.Domain
                 { "password", password }
             });
             if (!result)
-                throw new UnauthorizedAccessException("用户名或密码不正确");
+                throw new DomainServiceException(new UnauthorizedAccessException("用户名或密码不正确"));
         }
 
         public async Task SignOut([FromService]IAuthenticationProvider authenticationProvider)
@@ -41,13 +42,15 @@ namespace Wodsoft.Forum.Sample.Domain
             if (password.Length < 3)
                 throw new ArgumentException("密码不能小于3位。");
             username = username.Trim();
-            var memberContext = databaseContext.GetWrappedContext<Member>();
+            var memberContext = databaseContext.GetContext<Member>();
             var count = await memberContext.Query().CountAsync(t => t.Username.ToLower() == username.ToLower());
             if (count != 0)
                 throw new ArgumentException("用户名已存在。");
+            var memberGroupContext = databaseContext.GetContext<MemberGroup>();
+            var group = await memberGroupContext.Query().Where(t => !t.IsSystem).OrderBy(t => t.Point).FirstOrDefaultAsync();
             var member = memberContext.Create();
-            //member.Get(t => t.Thread);
             member.Username = username;
+            member.Group = group;
             member.SetPassword(password);
             memberContext.Add(member);
             await databaseContext.SaveAsync();

@@ -42,6 +42,10 @@ namespace Wodsoft.Forum.Sample.Entity
         [Required]
         public virtual int Order { get; set; }
 
+        [Display(Name = "是否显示", Order = 50)]
+        [Required]
+        public virtual bool IsDisplay { get; set; }
+
         IBoard IForum.Board { get { return Board; } set { Board = (Board)value; } }
 
         [Hide]

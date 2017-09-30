@@ -14,6 +14,8 @@ namespace Wodsoft.Forum
 
         string Title { get; set; }
 
+        bool IsDeleted { get; set; }
+
         ICollection<IPost> Replies { get; }
     }
 }

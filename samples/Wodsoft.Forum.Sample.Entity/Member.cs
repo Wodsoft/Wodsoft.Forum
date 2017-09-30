@@ -34,8 +34,9 @@ namespace Wodsoft.Forum.Sample.Entity
         [Required]
         public override byte[] Password { get { return base.Password; } set { base.Password = value; } }
 
-        [Display(Name = "类型", Order = 30)]
-        public AdminType Type { get; set; }
+        [Required]
+        [Display(Name = "用户组", Order = 40)]
+        public virtual MemberGroup Group { get; set; }
 
         [Hide]
         public ICollection<Thread> Threads { get; set; }
@@ -49,9 +50,23 @@ namespace Wodsoft.Forum.Sample.Entity
             return new object[0];
         }
 
+        private static readonly Guid _AdminGroupId = new Guid("80000000-1000-0000-0003-000000000000");
+        private static readonly Guid _SuperModeratorGroupId = new Guid("80000000-1000-0000-0003-000000000001");
+        private static readonly Guid _ModeratorGroupId = new Guid("80000000-1000-0000-0003-000000000002");
         bool IPermission.IsInRole(object role)
         {
-            return true;
+            if (role is AdminType type)
+            {
+                var currentType = AdminType.None;
+                if (Group.Index == _AdminGroupId)
+                    currentType = AdminType.Admin;
+                else if (Group.Index == _SuperModeratorGroupId)
+                    currentType = AdminType.SuperModerator;
+                else if (Group.Index == _ModeratorGroupId)
+                    currentType = AdminType.Moderator;
+                return (int)currentType >= (int)type;
+            }
+            return false;
         }
 
         ICollection<IThread> IMember.Threads { get { throw new NotSupportedException(); } }

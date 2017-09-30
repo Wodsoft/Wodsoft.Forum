@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Wodsoft.Forum.Sample
 {
@@ -19,6 +20,10 @@ namespace Wodsoft.Forum.Sample
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Any, 5000);
+                })
                 .UseStartup<Startup>()
                 .Build();
     }
